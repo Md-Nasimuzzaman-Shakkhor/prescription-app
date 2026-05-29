@@ -29,6 +29,66 @@ export default function Dashboard() {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [medicinesList, setMedicinesList] = useState([]);  
 
+  // --- NEW OPTIONAL COMMENT STATE ---
+  const [medicineComment, setMedicineComment] = useState('');
+
+  // --- PATIENT ADVICE TEMPLATE STATE ---
+  const [selectedAdviceCategory, setSelectedAdviceCategory] = useState('');
+
+  // --- ADVICE TEMPLATE DATA OBJECT ---
+  const adviceData = {
+    knee: {
+      items: [
+        "১। হালকা গরম সেঁক দিবেন, দিনে ৩/৪ বার, প্রতিবারে ২০ মিনিট করে।",
+        "২। শেখানো ব্যায়াম করবেন প্রতি ১ ঘন্টা পর পর ২/৩/৪ মিনিট করে।",
+        "৩। হাঁটু ভাঁজ করে নীচে বসে কোন কাজ করবেন না।",
+        "৪। খাওয়া/ নামাজ/ পূজা আপাতত চেয়ার টেবিলে বসে করবেন।",
+        "৫। টয়লেটে হাই কমোড ব্যবহার করবেন।",
+        "৬। সিঁড়িতে উঠা নামা সাবধানে রেলিং ধরে করবেন।",
+        "৭। দীর্ঘ সময় দাঁড়িয়ে কাজ করবেন না।",
+        "৮। ওজন নিয়ন্ত্রণে রাখতে হবে।"
+      ]
+    },
+    back: {
+      items: [
+        "১। হালকা গরম সেঁক দিবেন, দিনে ৩/৪ বার, প্রতিবারে ২০ মিনিট করে।",
+        "২। খাওয়া/ নামাজ/ পূজা আপাতত চেয়ার টেবিলে বসে করবেন।",
+        "৩। মাজা/ ঘাড় বাঁকা করে ঝুঁকে কোন কাজ করবেন না।",
+        "৪। উপুড় হয়ে ভারী জিনিস তুলবেন না।",
+        "৫। চেয়ারে সোজা হয়ে বসে কাজ করবেন।",
+        "৬। শুয়ে শেখানো ব্যায়াম করবেন দিনে ৩/৪ বার, প্রতিবারে ৫ মিনিট।",
+        "৭। ঘাড়ের শেখানো ব্যায়াম করবেন, দিনে ৫/৬ বার, প্রতিবারে ৫ মিনিট।",
+        "৮। ঘাড়ের নীচে বাচ্চাদের গোল কোল বালিশ দিয়ে শুবেন।",
+        "৯। শোয়া থেকে উঠার সময় পা ঝুলিয়ে দুই হাতে ভর দিয়ে উঠবেন।",
+        "১০। শক্ত জায়গার উপর নরম তোষকে শুবেন।",
+        "১১। বিছানায় শুয়ে পূর্ণ বিশ্রাম নিবেন ৭/১০/১৫ দিন।"
+      ]
+    },
+    plaster: {
+      items: [
+        "১। হাত/ পা বালিশের উপর দিয়ে উঁচুতে রাখবেন।",
+        "২। হাত/ পা এর আঙ্গুল নাড়াবেন।",
+        "৩। পায়ে ভর না দিয়ে ক্রাচে ভর দিয়ে হাঁটবেন।",
+        "৪। কোন অসুবিধা (আঙ্গুল ফুলে গেলে বা নীল হলে, প্রচন্ড ব্যথা হলে, জ্বর হলে) সঙ্গে সঙ্গে যোগাযোগ করবেন বা প্লাস্টার খুলে ফেলবেন।",
+        "৫। ........................ দিন পরপর ড্রেসিং করাবেন। ........................ দিন পর দেখাবেন।",
+        "৬। প্লাস্টার ভিজাবেন না/ ভাঙবেন না।",
+        "৭। হালকা গরম সেঁক দিবেন, দিনে ৩/৪ বার প্রতিবারে ২০ মিনিট করে।",
+        "৮। শেখানো ব্যায়াম করবেন প্রতি ১ ঘন্টা পর পর প্রতিবারে ২/৩/৪ মিনিট করে।",
+        "৯। নরম এবং পুরু Sole এর জুতা পরবেন।",
+        "১০। খালি পায়ে ও শক্ত জুতা পরে হাঁটবেন না।",
+        "১১। হাতের/ পায়ের বিশ্রাম।"
+      ]
+    },
+    physio: {
+      items: [
+        "• For Mobilization of ........................",
+        "• Back/ Neck/ Knee/ Ankle | Shoulder/ Elbow/ Wrist/ Hand",
+        "• UST/ SWD/ TENS/ Nerve Stimulation",
+        "• খাওয়া নিষেধ : (Foods to Avoid) : মাংস-গরু, খাসি, কলিজা, মগজ, পুঁইশাক, লাল শাক, ডাটা শাক, পালং শাক, ফুলকপি, পাতাকপি, গাজর, ছোলা বুট, ডালের তলানি, কাঁঠালের বীচি, শিমের বীচি, মাছের ডিম, কাঁচকি মাছ।"
+      ]
+    }
+  };
+
   // Check session storage on load so the doctor stays logged in on refresh
   useEffect(() => {
     const sessionStatus = sessionStorage.getItem('doc_authenticated');
@@ -86,21 +146,38 @@ export default function Dashboard() {
   };
 
   const addMedicineToPrescription = (e) => {
-    e.preventDefault();
-    if (!selectedMedicine) return;
+    if (e) e.preventDefault();
+    
+    if (medicineInput.trim() === '') return;
+
+    let finalName = '';
+    let finalGeneric = '';
+
+    if (selectedMedicine) {
+      finalName = selectedMedicine.name;
+      finalGeneric = selectedMedicine.generic;
+    } else {
+      finalName = medicineInput.trim();
+      finalGeneric = 'Custom / Unspecified';
+    }
 
     const newMedObj = {
-      name: selectedMedicine.name,
-      generic: selectedMedicine.generic,
-      dosage, timing, duration
+      name: finalName,
+      generic: finalGeneric,
+      dosage, 
+      timing, 
+      duration,
+      comment: medicineComment.trim() // Stores custom note data if filled
     };
 
     setMedicinesList([...medicinesList, newMedObj]);
     setMedicineInput('');
     setSelectedMedicine(null);
+    setSearchResults([]); 
     setDosage('1+0+1');
     setTiming('After Food');
     setDuration('7 Days');
+    setMedicineComment(''); // Reset custom comment input
   };
 
   const handleAddCc = (e) => {
@@ -141,7 +218,6 @@ export default function Dashboard() {
     );
   }
 
-  // Render Login Screen if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
@@ -169,7 +245,6 @@ export default function Dashboard() {
     );
   }
 
-  // Render App if authenticated
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col print:bg-white print:text-slate-900">
       
@@ -260,7 +335,6 @@ export default function Dashboard() {
                 <input type="text" placeholder="e.g., Knee joint pain for 3 days" value={ccInput} onChange={(e) => setCcInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddCc(e); } }} className="flex-1 bg-slate-900 px-3 py-1.5 border border-slate-700 rounded-lg focus:outline-none text-slate-100 text-sm" />
                 <button type="button" onClick={handleAddCc} className="bg-slate-700 hover:bg-slate-600 px-3 rounded-lg text-xs font-bold text-slate-200">Add</button>
               </div>
-              {/* Active C/C Tags Panel */}
               {ccList.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2 bg-slate-900/50 p-2 rounded-lg border border-slate-700/60">
                   {ccList.map((item, idx) => (
@@ -280,7 +354,6 @@ export default function Dashboard() {
                 <input type="text" placeholder="e.g., X-Ray Right Knee Joint" value={advInput} onChange={(e) => setAdvInput(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddAdv(e); } }} className="flex-1 bg-slate-900 px-3 py-1.5 border border-slate-700 rounded-lg focus:outline-none text-slate-100 text-sm" />
                 <button type="button" onClick={handleAddAdv} className="bg-slate-700 hover:bg-slate-600 px-3 rounded-lg text-xs font-bold text-slate-200">Add</button>
               </div>
-              {/* Active Adv Tags Panel */}
               {advList.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2 bg-slate-900/50 p-2 rounded-lg border border-slate-700/60">
                   {advList.map((item, idx) => (
@@ -299,8 +372,23 @@ export default function Dashboard() {
             <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400">4. Medication Details</h3>
             
             <div className="relative">
-              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Search Medicine</label>
-              <input type="text" placeholder="Search from database..." value={medicineInput} onChange={(e) => { setMedicineInput(e.target.value); if(selectedMedicine) setSelectedMedicine(null); }} className="w-full bg-slate-900 px-3 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-100 placeholder-slate-500 text-sm" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Medicine Name</label>
+              <input 
+                type="text" 
+                placeholder="Search database or type name manually..." 
+                value={medicineInput} 
+                onChange={(e) => { 
+                  setMedicineInput(e.target.value); 
+                  if(selectedMedicine && e.target.value !== selectedMedicine.name) setSelectedMedicine(null); 
+                }} 
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && medicineInput.trim() !== '') {
+                    e.preventDefault();
+                    addMedicineToPrescription();
+                  }
+                }}
+                className="w-full bg-slate-900 px-3 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-100 placeholder-slate-500 text-sm" 
+              />
 
               {/* DB SEARCH DROPDOWN */}
               {searchResults.length > 0 && (
@@ -325,6 +413,11 @@ export default function Dashboard() {
                   <option>1+0+0</option>
                   <option>0+0+1</option>
                   <option>0+1+0</option>
+                  <option>1/2+0+0</option>
+                  <option>0+0+1/2</option>
+                  <option>1/2+0+1/2</option>
+                  <option>1+0+1/2</option>
+                  <option>1/2+1/2+1/2</option>
                 </select>
               </div>
               <div>
@@ -344,14 +437,51 @@ export default function Dashboard() {
                   <option>3 Days</option>
                   <option>2 Weeks</option>
                   <option>1 Month</option>
+                  <option>Continue</option>
                 </select>
               </div>
             </div>
 
-            <button type="submit" disabled={!selectedMedicine} className={`w-full mt-2 py-2 rounded-lg font-medium text-xs tracking-wider uppercase transition ${selectedMedicine ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md' : 'bg-slate-700 text-slate-400 cursor-not-allowed'}`}>
+            {/* NEW: Optional Custom Note / Comment Input Field */}
+            <div className="pt-1">
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Custom Note / Comment (Optional)</label>
+              <input 
+                type="text" 
+                placeholder="e.g., Take with lots of water / For severe pain only" 
+                value={medicineComment} 
+                onChange={(e) => setMedicineComment(e.target.value)} 
+                className="w-full bg-slate-900 px-3 py-1.5 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-100 placeholder-slate-600 text-xs" 
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={medicineInput.trim() === ''} 
+              className={`w-full mt-2 py-2 rounded-lg font-medium text-xs tracking-wider uppercase transition ${medicineInput.trim() !== '' ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md' : 'bg-slate-700 text-slate-400 cursor-not-allowed'}`}
+            >
               Add to Prescription Sheet
             </button>
           </form>
+
+          {/* 5. Special Patient Advice Template Selector */}
+          <div className="space-y-3 bg-slate-800 p-4 rounded-xl border border-slate-700">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400">5. Patient Advice Template</h3>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Select Advice Category</label>
+              <select 
+                value={selectedAdviceCategory} 
+                onChange={(e) => setSelectedAdviceCategory(e.target.value)} 
+                className="w-full bg-slate-900 px-3 py-2 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-100 text-sm"
+              >
+                <option value="">-- No Template Selected --</option>
+                <option value="knee">হাঁটু ব্যথা রোগীর উপদেশ</option>
+                <option value="back">ঘাড়/ পিঠ/ কোমর ব্যথা রোগীর উপদেশ</option>
+                <option value="plaster">প্লাস্টার পরবর্তী উপদেশ</option>
+                <option value="physio">Physiotherapy & Foods to Avoid</option>
+              </select>
+            </div>
+          </div>
+
         </div>
 
         {/* RIGHT COLUMN: Premium Live Prescription Preview */}
@@ -365,13 +495,11 @@ export default function Dashboard() {
               <div className="flex justify-between items-start border-b border-slate-300 pb-5 mb-5">
                 <div className="text-left font-sans text-slate-900">
                   <h3 className="text-[17px] font-black tracking-wide leading-tight text-slate-900">Dr. Md. Emraan Hossain</h3>
-                  <p className="text-[11px] font-bold text-slate-600 tracking-wide mt-0.5">BMDC- A-119333</p>
-                  <p className="text-[12px] font-bold text-slate-800 mt-0.5">MBBS(DU), CCD(BIRDEM)</p>
-                  <p className="text-[11px] font-medium text-slate-700">PGT (Medicine), PGT (surgery)</p>
-                  <p className="text-[11px] font-bold text-slate-800">FCPS (fp) orthopaedic surgery</p>
-                  <p className="text-[11px] font-bold text-emerald-800 mt-0.5">Surgery , orthopaedic surgery & Diabetology</p>
-                  <p className="text-[12px] font-black text-slate-900 mt-1">Medical College For Women and Hospital</p>
-                  <p className="text-[11px] font-medium text-slate-500">Emergency Department</p>
+                  <p className="text-[12px] font-bold text-slate-800 mt-0.5">MBBS(DU), D-Ortho(On course)</p>
+                  <p className="text-[11px] font-bold text-slate-800">FCPS (fp) Orthopaedic surgery</p>
+                  <p className="text-[11px] font-bold text-emerald-800 mt-0.5">Orthopaedic surgery & Trauma</p>
+                  <p className="text-[12px] font-black text-slate-900 mt-1">AO Trauma-Pre Basic Course</p>
+                  <p className="text-[12px] font-black text-slate-900 mt-1">For serial- 01621866088</p>
                 </div>
                 <div className="w-1/3 h-full" />
               </div>
@@ -385,27 +513,37 @@ export default function Dashboard() {
               </div>
 
               {/* TWO-COLUMN CLINICAL BODY */}
-              <div className="grid grid-cols-12 gap-6 min-h-[500px]">
+              <div className="grid grid-cols-12 gap-6 min-h-[460px]">
                 
                 {/* Left Column */}
                 <div className="col-span-4 border-r border-slate-100 flex flex-col gap-6 pr-3">
-                  <div>
-                    <h5 className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">VITALS</h5>
-                    <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
-                      <li className="flex flex-col border-b border-slate-50 pb-1">
-                        <span className="text-[10px] text-slate-400 uppercase">B.P</span>
-                        <span className="font-mono text-slate-800 font-bold">{bp || "---"} <span className="text-[9px] font-normal text-slate-400">mmHg</span></span>
-                      </li>
-                      <li className="flex flex-col border-b border-slate-50 pb-1">
-                        <span className="text-[10px] text-slate-400 uppercase">Weight</span>
-                        <span className="font-mono text-slate-800 font-bold">{weight || "---"} <span className="text-[9px] font-normal text-slate-400">kg</span></span>
-                      </li>
-                      <li className="flex flex-col border-b border-slate-50 pb-1">
-                        <span className="text-[10px] text-slate-400 uppercase">Pulse</span>
-                        <span className="font-mono text-slate-800 font-bold">{pulse || "---"} <span className="text-[9px] font-normal text-slate-400">bpm</span></span>
-                      </li>
-                    </ul>
-                  </div>
+                  
+                  {/* DYNAMIC VITALS CONTAINER */}
+                  {(bp.trim() || weight.trim() || pulse.trim()) && (
+                    <div>
+                      <h5 className="text-[11px] font-black uppercase tracking-wider text-slate-400 mb-2">VITALS</h5>
+                      <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
+                        {bp.trim() && (
+                          <li className="flex flex-col border-b border-slate-50 pb-1">
+                            <span className="text-[10px] text-slate-400 uppercase">B.P</span>
+                            <span className="font-mono text-slate-800 font-bold">{bp} <span className="text-[9px] font-normal text-slate-400">mmHg</span></span>
+                          </li>
+                        )}
+                        {weight.trim() && (
+                          <li className="flex flex-col border-b border-slate-50 pb-1">
+                            <span className="text-[10px] text-slate-400 uppercase">Weight</span>
+                            <span className="font-mono text-slate-800 font-bold">{weight} <span className="text-[9px] font-normal text-slate-400">kg</span></span>
+                          </li>
+                        )}
+                        {pulse.trim() && (
+                          <li className="flex flex-col border-b border-slate-50 pb-1">
+                            <span className="text-[10px] text-slate-400 uppercase">Pulse</span>
+                            <span className="font-mono text-slate-800 font-bold">{pulse} <span className="text-[9px] font-normal text-slate-400">bpm</span></span>
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
 
                   {ccList.length > 0 && (
                     <div className="animate-fadeIn">
@@ -450,6 +588,13 @@ export default function Dashboard() {
                             <span className="italic font-normal text-slate-400">Generic: {med.generic}</span>
                             <span className="text-slate-600 font-mono">{med.timing} — <span className="text-emerald-700 font-bold">{med.duration}</span></span>
                           </div>
+                          
+                          {/* DYNAMIC MEDICINE COMMENT BLOCK: Renders only if comment string exists */}
+                          {med.comment && (
+                            <div className="mt-1 pl-4 text-[11px] font-bold text-red-600/90 italic tracking-wide">
+                              Note: {med.comment}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -457,17 +602,32 @@ export default function Dashboard() {
                 </div>
 
               </div>
+
+              {/* DYNAMIC PATIENT ADVICE PRINT PANEL (With Fixed Heading) */}
+              {selectedAdviceCategory && adviceData[selectedAdviceCategory] && (
+                <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-200 animate-fadeIn text-left">
+                  <h5 className="text-[11px] font-black uppercase tracking-wider text-slate-900 mb-2">
+                    Suggestions:
+                  </h5>
+                  <ul className="text-[10px] text-slate-700 space-y-1 font-medium leading-relaxed">
+                    {adviceData[selectedAdviceCategory].items.map((line, idx) => (
+                      <li key={idx} className="tracking-tight">{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
             </div>
 
             {/* FOOTER BAR */}
             <div className="border-t border-slate-200 pt-6 flex justify-between items-end text-[10px] text-slate-400 font-medium tracking-wide">
               <div>
-                <p>Generated securely via Shakkhor_DocTech</p>
-                <p className="font-mono text-[9px] text-slate-300">System reference token: SignatureNS7</p>
+                <p>Generated securely via Signature_DocTech</p>
+                <p className="font-mono text-[9px] text-slate-300">System reference token: #ShakkhorNS7</p>
               </div>
               <div className="text-center w-40">
                 <div className="border-b border-slate-300 w-full mb-1 h-8" />
-                <p className="font-bold text-slate-500 uppercase tracking-wider text-[9px]">Registered Signature</p>
+                <p className="font-bold text-slate-500 uppercase tracking-wider text-[9px]">Doctor's Signature</p>
               </div>
             </div>
 
