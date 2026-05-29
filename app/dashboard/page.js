@@ -9,6 +9,9 @@ export default function Dashboard() {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
+  // --- NEW: TRACK IF REAL DOCTOR OR DEMO PORTFOLIO USER ---
+  const [userRole, setUserRole] = useState('doctor'); 
+
   // --- EXISTING STATES ---
   const [patientName, setPatientName] = useState('');
   const [patientAge, setPatientAge] = useState('');
@@ -25,17 +28,13 @@ export default function Dashboard() {
   const [dosage, setDosage] = useState('1+0+1');
   const [timing, setTiming] = useState('After Food');
   const [duration, setDuration] = useState('7 Days');
-  const [searchResults, setSearchResults] = useState([]); 
+  const [searchResults, setSearchResults] = useState([]);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
-  const [medicinesList, setMedicinesList] = useState([]);  
-
-  // --- NEW OPTIONAL COMMENT STATE ---
+  const [medicinesList, setMedicinesList] = useState([]);
   const [medicineComment, setMedicineComment] = useState('');
-
-  // --- PATIENT ADVICE TEMPLATE STATE ---
   const [selectedAdviceCategory, setSelectedAdviceCategory] = useState('');
 
-  // --- ADVICE TEMPLATE DATA OBJECT ---
+  // --- ADVICE TEMPLATE DATA OBJECT (RESTORED & FIXED) ---
   const adviceData = {
     knee: {
       items: [
@@ -89,16 +88,18 @@ export default function Dashboard() {
     }
   };
 
-  // Check session storage on load so the doctor stays logged in on refresh
+  // Check session storage on load so the user stays logged in on refresh
   useEffect(() => {
     const sessionStatus = sessionStorage.getItem('doc_authenticated');
+    const savedRole = sessionStorage.getItem('doc_role');
     if (sessionStatus === 'true') {
       setIsAuthenticated(true);
+      if (savedRole) setUserRole(savedRole);
     }
     setLoading(false);
   }, []);
 
-  // Handle Login Submission
+  // Handle Login Submission (Supports Real Doctor OR public Portfolio view)
   const handleLogin = (e) => {
     e.preventDefault();
     setAuthError('');
@@ -106,8 +107,18 @@ export default function Dashboard() {
     const correctEmail = process.env.NEXT_PUBLIC_DOCTOR_EMAIL;
     const correctPassword = process.env.NEXT_PUBLIC_DOCTOR_PASSPHRASE;
 
-    if (email === correctEmail && password === correctPassword) {
+    const isRealDoctor = email === correctEmail && password === correctPassword;
+    const isDemoUser = email === "demo@example.com" && password === "demo123";
+
+    if (isRealDoctor) {
       sessionStorage.setItem('doc_authenticated', 'true');
+      sessionStorage.setItem('doc_role', 'doctor');
+      setUserRole('doctor');
+      setIsAuthenticated(true);
+    } else if (isDemoUser) {
+      sessionStorage.setItem('doc_authenticated', 'true');
+      sessionStorage.setItem('doc_role', 'demo');
+      setUserRole('demo');
       setIsAuthenticated(true);
     } else {
       setAuthError('Invalid credentials. Access Denied.');
@@ -117,6 +128,7 @@ export default function Dashboard() {
   // Handle Logout
   const handleLogout = () => {
     sessionStorage.removeItem('doc_authenticated');
+    sessionStorage.removeItem('doc_role');
     setIsAuthenticated(false);
   };
 
@@ -147,7 +159,6 @@ export default function Dashboard() {
 
   const addMedicineToPrescription = (e) => {
     if (e) e.preventDefault();
-    
     if (medicineInput.trim() === '') return;
 
     let finalName = '';
@@ -167,7 +178,7 @@ export default function Dashboard() {
       dosage, 
       timing, 
       duration,
-      comment: medicineComment.trim() // Stores custom note data if filled
+      comment: medicineComment.trim()
     };
 
     setMedicinesList([...medicinesList, newMedObj]);
@@ -177,7 +188,7 @@ export default function Dashboard() {
     setDosage('1+0+1');
     setTiming('After Food');
     setDuration('7 Days');
-    setMedicineComment(''); // Reset custom comment input
+    setMedicineComment('');
   };
 
   const handleAddCc = (e) => {
@@ -200,6 +211,10 @@ export default function Dashboard() {
 
   const handleRemoveAdv = (indexToRemove) => {
     setAdvList(advList.filter((_, index) => index !== indexToRemove));
+  };
+
+  const removeMedicine = (indexToRemove) => {
+    setMedicinesList(medicinesList.filter((_, index) => index !== indexToRemove));
   };
 
   const formatDateDisplay = (dateString) => {
@@ -226,6 +241,20 @@ export default function Dashboard() {
             <h1 className="text-xl font-bold tracking-wider text-slate-200 uppercase">Signature  <span className="text-xs text-emerald-400 font-mono">DocTech</span></h1>
             <p className="text-xs text-slate-400 mt-1">Authorized Medical Personnel Access Only</p>
           </div>
+
+          {/* NEW: PUBLIC PORTFOLIO DEMO LOGIN BADGE CARD */}
+          <div className="mb-5 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
+            <p className="text-[11px] text-emerald-400 font-bold tracking-wider uppercase">
+              ✨ Portfolio Demo Mode Active
+            </p>
+            <p className="text-[10px] text-slate-400 mt-1 font-mono">
+              Email: <span className="text-slate-200 select-all font-bold">demo@example.com</span>
+            </p>
+            <p className="text-[10px] text-slate-400 font-mono">
+              Pass: <span className="text-slate-200 select-all font-bold">demo123</span>
+            </p>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Doctor Email</label>
@@ -255,8 +284,8 @@ export default function Dashboard() {
           <h1 className="text-lg font-semibold tracking-wider uppercase text-slate-200">Signature <span className="text-xs text-emerald-400 font-mono">DocTech</span></h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-sm bg-slate-800 px-4 py-1.5 rounded-full text-slate-300 font-medium border border-slate-700">
-            Dr. Md. Emraan Hossain
+          <div className="text-xs bg-slate-800 px-4 py-1.5 rounded-full text-slate-300 font-medium border border-slate-700">
+            {userRole === 'doctor' ? 'Dr. Md. Emraan Hossain' : 'Dr. Signature (Portfolio Demo Account)'}
           </div>
           <button onClick={handleLogout} className="text-xs font-bold text-slate-400 hover:text-red-400 transition uppercase tracking-wide">
             Exit
@@ -437,12 +466,13 @@ export default function Dashboard() {
                   <option>3 Days</option>
                   <option>2 Weeks</option>
                   <option>1 Month</option>
+                  <option>2 Month</option>
                   <option>Continue</option>
                 </select>
               </div>
             </div>
 
-            {/* NEW: Optional Custom Note / Comment Input Field */}
+            {/* Optional Custom Note / Comment Input Field */}
             <div className="pt-1">
               <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Custom Note / Comment (Optional)</label>
               <input 
@@ -491,15 +521,27 @@ export default function Dashboard() {
           <div className="w-full max-w-[620px] min-h-[842px] bg-white shadow-2xl p-14 flex flex-col justify-between text-slate-800 font-sans print:shadow-none print:p-0">
             
             <div>
-              {/* BRANDING HEADER */}
+              {/* BRANDING HEADER - DETECTS ROLE DYNAMICALLY */}
               <div className="flex justify-between items-start border-b border-slate-300 pb-5 mb-5">
                 <div className="text-left font-sans text-slate-900">
-                  <h3 className="text-[17px] font-black tracking-wide leading-tight text-slate-900">Dr. Md. Emraan Hossain</h3>
-                  <p className="text-[12px] font-bold text-slate-800 mt-0.5">MBBS(DU), D-Ortho(On course)</p>
-                  <p className="text-[11px] font-bold text-slate-800">FCPS (fp) Orthopaedic surgery</p>
-                  <p className="text-[11px] font-bold text-emerald-800 mt-0.5">Orthopaedic surgery & Trauma</p>
-                  <p className="text-[12px] font-black text-slate-900 mt-1">AO Trauma-Pre Basic Course</p>
-                  <p className="text-[12px] font-black text-slate-900 mt-1">For serial- 01621866088</p>
+                  <h3 className="text-[17px] font-black tracking-wide leading-tight text-slate-900">
+                    {userRole === 'doctor' ? 'Dr. Md. Emraan Hossain' : 'Dr. Signature'}
+                  </h3>
+                  <p className="text-[12px] font-bold text-slate-800 mt-0.5">
+                    {userRole === 'doctor' ? 'MBBS(DU), D-Ortho(On course)' : 'MBBS (Dhaka Medical College), MS (Orthopedics)'}
+                  </p>
+                  <p className="text-[11px] font-bold text-slate-800">
+                    {userRole === 'doctor' ? 'FCPS (fp) Orthopaedic surgery' : 'Fellowship in Spine & Trauma Surgery'}
+                  </p>
+                  <p className="text-[11px] font-bold text-emerald-800 mt-0.5">
+                    {userRole === 'doctor' ? 'Orthopaedic surgery & Trauma' : 'Bone, Joint & Fracture Specialist'}
+                  </p>
+                  <p className="text-[12px] font-black text-slate-900 mt-1">
+                    {userRole === 'doctor' ? 'AO Trauma-Pre Basic Course' : 'Cell: +880 1700-000000'}
+                  </p>
+                  <p className="text-[12px] font-black text-slate-900 mt-1">
+                    {userRole === 'doctor' ? 'For serial- 01621866088' : 'For Serial: +880 1600-000000'}
+                  </p>
                 </div>
                 <div className="w-1/3 h-full" />
               </div>
@@ -582,14 +624,17 @@ export default function Dashboard() {
                               <span className="font-mono text-xs font-bold text-slate-400">{index + 1}.</span>
                               <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{med.name}</span>
                             </div>
-                            <span className="font-mono font-bold text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-700">{med.dosage}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-700">{med.dosage}</span>
+                              <button type="button" onClick={() => removeMedicine(index)} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity font-bold text-xs px-1 print:hidden">×</button>
+                            </div>
                           </div>
                           <div className="flex justify-between text-[11px] text-slate-500 font-semibold mt-1 pl-4">
                             <span className="italic font-normal text-slate-400">Generic: {med.generic}</span>
                             <span className="text-slate-600 font-mono">{med.timing} — <span className="text-emerald-700 font-bold">{med.duration}</span></span>
                           </div>
                           
-                          {/* DYNAMIC MEDICINE COMMENT BLOCK: Renders only if comment string exists */}
+                          {/* MEDICINE COMMENT BLOCK */}
                           {med.comment && (
                             <div className="mt-1 pl-4 text-[11px] font-bold text-red-600/90 italic tracking-wide">
                               Note: {med.comment}
@@ -603,7 +648,7 @@ export default function Dashboard() {
 
               </div>
 
-              {/* DYNAMIC PATIENT ADVICE PRINT PANEL (With Fixed Heading) */}
+              {/* DYNAMIC PATIENT ADVICE PRINT PANEL */}
               {selectedAdviceCategory && adviceData[selectedAdviceCategory] && (
                 <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-200 animate-fadeIn text-left">
                   <h5 className="text-[11px] font-black uppercase tracking-wider text-slate-900 mb-2">
@@ -627,7 +672,9 @@ export default function Dashboard() {
               </div>
               <div className="text-center w-40">
                 <div className="border-b border-slate-300 w-full mb-1 h-8" />
-                <p className="font-bold text-slate-500 uppercase tracking-wider text-[9px]">Doctor's Signature</p>
+                <p className="font-bold text-slate-500 uppercase tracking-wider text-[9px]">
+                  {userRole === 'doctor' ? "Doctor's Signature" : "Reviewer Signature"}
+                </p>
               </div>
             </div>
 
